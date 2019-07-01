@@ -5,6 +5,7 @@ html,body{ height:100%;}
 .clearfix:after{ content:""; display: block; clear:both;}
 
 #main{ height: 100%; display: flex; flex-direction:column;}
+<<<<<<< HEAD
 
 #header{width:100%; height:50px; color: #fff; background: #e54847; border-bottom: 1px solid #e54847; position: relative;}
 #header h1{ font-size: 18px; text-align: center; line-height: 50px; font-weight: normal; }
@@ -114,3 +115,6 @@ html,body{ height:100%;}
 #footer ul li.active{ color: #f03d37;}
 #footer ul i{ font-size: 20px;}
 #footer ul p{ font-size: 12px; line-height: 18px;}
+=======
+#content{ flex:1; overflow:auto; margin-bottom: 50px; position: relative; display: flex; flex-direction:column;}
+>>>>>>> add create components
