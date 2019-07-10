@@ -4,7 +4,7 @@
       <div id="content">
         <div class="movie_menu">
                 <router-link tag="div" to="/movie/city" class="city_name">
-                  <span>大连</span><i class="iconfont icon-lower-triangle"></i>
+                  <span> {{$store.state.city.nm}} </span><i class="iconfont icon-lower-triangle"></i>
                 </router-link>
                 <div class="hot_swtich">
                   <router-link tag="div" to="/movie/nowPlaying" class="hot_item">正在热映</router-link>
@@ -25,11 +25,41 @@
 <script>
 import Header from '@/components/Header'
 import TabBar from '@/components/TabBar'
+import { messageBox } from '@/components/JS'
 export default {
   name: 'Movie',
   components: {
     Header,
     TabBar
+  },
+  mounted () {
+    // 为人性化不要要一打开就弹出定位这边做了3秒延迟
+    setTimeout(() => {
+      this.axios.get('/api/getLocation').then((res) => {
+        var msg = res.data.msg
+        if (msg === 'ok') {
+          var nm = res.data.data.nm
+          var id = res.data.data.id
+          // eslint-disable-next-line eqeqeq
+          if (this.$store.state.city.id == id) {
+
+          } else {
+            messageBox({
+              title: '定位2',
+              content: nm,
+              cancel: '取消',
+              ok: '切换定位',
+              handleOk () {
+              // 这边点击ok的时候是修改本地存储的nm Id 然后通过city里做的城市切换功能来实现数据后台切换
+                window.localStorage.setItem('nowNm', nm)
+                window.localStorage.setItem('nowId', id)
+                window.location.reload()
+              }
+            })
+          }
+        }
+      })
+    }, 3000)
   }
 }
 </script>
