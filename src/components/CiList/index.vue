@@ -1,24 +1,28 @@
 /* eslint-disable vue/no-use-v-if-with-v-for */
 <template>
   <div class="cinema_body">
-    <ul>
-      <li v-for="item in cinemaList" :key="item.id">
-        <div>
-          <span> {{item.nm}} </span>
-          <span class="q"><span class="price"> {{item.sellPrice}} </span> 元起</span>
-        </div>
-        <div class="address">
-          <span> {{item.addr}} </span>
-          <span> {{item.distance}} </span>
-        </div>
-        <div class="card">
-          <!-- 这边num代表值，而key代表的是名称 -->
-            <div v-for="(num, key) in item.tag " v-if=" num ===1 " :key="key" :class=" key | classCard">
-                {{key | formatCard}}
-            </div>
-        </div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
+      <ul>
+        <li v-for="item in cinemaList" :key="item.id">
+          <div>
+            <span> {{item.nm}} </span>
+            <span class="q"><span class="price"> {{item.sellPrice}} </span> 元起</span>
+          </div>
+          <div class="address">
+            <span> {{item.addr}} </span>
+            <span> {{item.distance}} </span>
+          </div>
+          <div class="card">
+            <!-- 这边num代表值，而key代表的是名称 -->
+              // eslint-disable-next-line vue/no-use-v-if-with-v-for
+              <div v-for="(num, key) in item.tag " v-if=" num ===1 " :key="key" :class=" key | classCard">
+                  {{key | formatCard}}
+              </div>
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -28,16 +32,25 @@ export default {
   name: 'CiList',
   data () {
     return {
-      cinemaList: []
+      cinemaList: [],
+      isLoading: true,
+      prevCityId: -1
     }
   },
-  mounted () {
-    this.axios.get('/api/cinemaList?cityId=10').then((res) => {
-      var msg = res.data.msg
-      if (msg === 'ok') {
-        this.cinemaList = res.data.data.cinemas
-      }
-    })
+  activated () {
+    var cityId = this.$store.state.city.id
+    if (this.prevCityId === cityId) {
+
+    } else {
+      this.axios.get('/api/cinemaList?cityId=' + cityId).then((res) => {
+        var msg = res.data.msg
+        if (msg === 'ok') {
+          this.cinemaList = res.data.data.cinemas
+          this.isLoading = false
+          this.prevCityId = cityId
+        }
+      })
+    }
   },
   filters: {
     formatCard (key) {

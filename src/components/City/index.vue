@@ -1,21 +1,26 @@
 <template>
   <div class="city_body">
     <div class="city_list">
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li v-for="item in hotList" :key="item.id"> {{item.nm}} </li>
-        </ul>
+     <Loading v-if="isLoading" />
+     <Scroller v-else ref="city_list">
+       <div>
+          <div class="city_hot">
+            <h2>热门城市</h2>
+            <ul class="clearfix">
+              <li v-for="item in hotList" :key="item.id" @tap="handleToCity(item.nm, item.id)"> {{item.nm}} </li>
+            </ul>
+          </div>
+          <!-- 添加ref属性，使在点击handleToIndex 这个功能时，可以进行位置的定位 -->
+          <div class="city_sort" ref="city_sort">
+            <div v-for="item in cityList" :key="item.index">
+              <h2> {{item.index}} </h2>
+              <ul>
+                <li v-for="itemList in item.list" :key="itemList.id" @tap="handleToCity(itemList.nm, itemList.id)"> {{itemList.nm}} </li>
+              </ul>
+            </div>
+          </div>
       </div>
-      <!-- 添加ref属性，使在点击handleToIndex 这个功能时，可以进行位置的定位 -->
-      <div class="city_sort" ref="city_sort">
-        <div v-for="item in cityList" :key="item.index">
-          <h2> {{item.index}} </h2>
-          <ul>
-            <li v-for="itemList in item.list" :key="itemList.id"> {{itemList.nm}} </li>
-          </ul>
-        </div>
-      </div>
+     </Scroller>
     </div>
 
      <div class="city_index">
@@ -35,22 +40,37 @@ export default {
   data () {
     return {
       cityList: [],
-      hotList: []
+      hotList: [],
+      isLoading: true
     }
   },
   // 引入api数据
   mounted () {
-    this.axios.get('/api/cityList').then((res) => {
-      var msg = res.data.msg
-      if (msg === 'ok') {
-        var cities = res.data.data.cities
-        // [ { index: 'A', list: [ { nm: '安徽', id= 123 }]}] 这种形式
-        var { cityList, hotList } = this.formatCityList(cities)
-        // 进行映射
-        this.cityList = cityList
-        this.hotList = hotList
-      }
-    })
+    var cityList = window.localStorage.getItem('cityList')
+    var hotList = window.localStorage.getItem('hotList')
+    // 进行判断，cityList 和 HotList 都存在时，提取本地解析的数组，如果一方不满足则对城市重新走api获取
+    if (cityList && hotList) {
+      // 把字符串解析成数组
+      this.cityList = JSON.parse(cityList)
+      this.hotList = JSON.parse(hotList)
+      this.isLoading = false
+    } else {
+      this.axios.get('/api/cityList').then((res) => {
+        var msg = res.data.msg
+        if (msg === 'ok') {
+          this.isLoading = false
+          var cities = res.data.data.cities
+          // [ { index: 'A', list: [ { nm: '安徽', id= 123 }]}] 这种形式
+          var { cityList, hotList } = this.formatCityList(cities)
+          // 进行映射
+          this.cityList = cityList
+          this.hotList = hotList
+          // 本地存储,把数组转换成字符串类型，利用JSON下的 stringify 方法
+          window.localStorage.setItem('cityList', JSON.stringify(cityList))
+          window.localStorage.setItem('hotList', JSON.stringify(hotList))
+        }
+      })
+    }
   },
   methods: {
     formatCityList (cities) {
@@ -105,7 +125,18 @@ export default {
       // 转跳到对应的h2位置上
       var h2 = this.$refs.city_sort.getElementsByTagName('h2')
       // 这边是让citysort父元素滚动到h2的位置
-      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+      // this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+      // 当页面用上betterscroller之后有 之前的那个方法就不能用用了，我们在Scroller组件中创建方法
+      this.$refs.city_list.toScrollTop(-h2[index].offsetTop)
+    },
+    handleToCity (nm, id) {
+      // 因为namespaced 为 true,所以在commit的时候要输上模块名称及变换方法
+      this.$store.commit('city/CITY_INFO', { nm, id })
+      // 把在template上面选的的nm id 储存到本地
+      window.localStorage.setItem('nowNm', nm)
+      window.localStorage.setItem('nowId', id)
+      // 选择完成后路由推送到nowPlaying下
+      this.$router.push('/movie/nowPllaying')
     }
   }
 }
