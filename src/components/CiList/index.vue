@@ -15,7 +15,6 @@
           </div>
           <div class="card">
             <!-- 这边num代表值，而key代表的是名称 -->
-              // eslint-disable-next-line vue/no-use-v-if-with-v-for
               <div v-for="(num, key) in item.tag " v-if=" num ===1 " :key="key" :class=" key | classCard">
                   {{key | formatCard}}
               </div>
