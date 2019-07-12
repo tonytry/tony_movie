@@ -12,7 +12,9 @@ Vue.prototype.axios = axios
 
 // 全局对照片w h过滤器 对url字段中的w.h进行替换，这边用/ /， 当转换实际.用 \
 Vue.filter('setWH', (url, arg) => {
-  return url.replace(/w\.h/, arg)
+  if (url) {
+    return url.replace(/w\.h/, arg)
+  }
 })
 // 对Scroller组件的全局引用
 Vue.component('Scroller', Scroller)

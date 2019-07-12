@@ -19,6 +19,8 @@
         </keep-alive>
       </div>
     <TabBar />
+    <!-- 用命名视图添加路由 -->
+    <router-view name="detail" />
   </div>
 </template>
 
